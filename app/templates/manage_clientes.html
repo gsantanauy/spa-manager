@@ -1,0 +1,251 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Gestionar Clientes</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('gestionar_clientes') }}">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o teléfono..." value="{{ query_busqueda or '' }}">
+                    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header"><h3>Añadir Nuevo Cliente</h3></div>
+        <div class="card-body">
+            <form action="{{ url_for('gestionar_clientes') }}" method="POST">
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Email (Opcional)</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                </div>
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tipo de Cliente</label>
+                        <select name="tipo_membresia" id="tipoMembresia" class="form-select">
+                            <option value="Huésped" selected>Huésped de Hotel</option>
+                            <option value="Día de Spa">Día de Spa</option>
+                            <option value="Mensual">Membresía Mensual</option>
+                            <option value="Anual">Membresía Anual</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3" id="vencimientoContainer" style="display: none;">
+                        <label class="form-label">Vencimiento de Membresía</label>
+                        <input type="date" name="vencimiento_membresia" id="vencimientoInput" class="form-control">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Agregar Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header"><h3>Clientes Registrados</h3></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Tipo de Cliente</th>
+                            <th>Vencimiento</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for cliente in clientes_paginados.items %}
+                    <tr>
+                        <td><a href="{{ url_for('detalle_cliente', cliente_id=cliente.id) }}">{{ cliente.nombre }}</a></td>
+                        <td>{{ cliente.telefono }}</td>
+                        <td>{{ cliente.email or '-' }}</td>
+                        <td><span class="badge bg-info text-dark">{{ cliente.tipo_membresia }}</span></td>
+                        <td>
+                            {% if cliente.vencimiento_membresia %}
+                                {{ cliente.vencimiento_membresia.strftime('%d/%m/%Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                        data-bs-toggle="modal" data-bs-target="#editClientModal"
+                                        data-cliente-id="{{ cliente.id }}"
+                                        data-cliente-nombre="{{ cliente.nombre }}"
+                                        data-cliente-telefono="{{ cliente.telefono }}"
+                                        data-cliente-email="{{ cliente.email or '' }}"
+                                        data-cliente-membresia="{{ cliente.tipo_membresia }}"
+                                        data-cliente-vencimiento="{{ cliente.vencimiento_membresia or '' }}">
+                                    Editar
+                                </button>
+                                <form action="{{ url_for('eliminar_cliente', id=cliente.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <td colspan="6" class="text-center">No hay clientes registrados.</td>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="mb-2">
+                    <span class="me-2 text-muted">Mostrar:</span>
+                    <div class="btn-group">
+                        <a href="{{ url_for('gestionar_clientes', page=1, per_page=10, q=query_busqueda) }}" class="btn btn-sm {% if per_page == 10 %}btn-primary{% else %}btn-outline-primary{% endif %}">10</a>
+                        <a href="{{ url_for('gestionar_clientes', page=1, per_page=25, q=query_busqueda) }}" class="btn btn-sm {% if per_page == 25 %}btn-primary{% else %}btn-outline-primary{% endif %}">25</a>
+                        <a href="{{ url_for('gestionar_clientes', page=1, per_page=50, q=query_busqueda) }}" class="btn btn-sm {% if per_page == 50 %}btn-primary{% else %}btn-outline-primary{% endif %}">50</a>
+                    </div>
+                </div>
+                <nav aria-label="Paginación de clientes" class="mb-2">
+                    <ul class="pagination justify-content-center mb-0">
+                        <li class="page-item {% if not clientes_paginados.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ url_for('gestionar_clientes', page=clientes_paginados.prev_num, q=query_busqueda, per_page=per_page) }}">Anterior</a></li>
+                        {% for page_num in clientes_paginados.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                                <li class="page-item {% if page_num == clientes_paginados.page %}active{% endif %}"><a class="page-link" href="{{ url_for('gestionar_clientes', page=page_num, q=query_busqueda, per_page=per_page) }}">{{ page_num }}</a></li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        <li class="page-item {% if not clientes_paginados.has_next %}disabled{% endif %}"><a class="page-link" href="{{ url_for('gestionar_clientes', page=clientes_paginados.next_num, q=query_busqueda, per_page=per_page) }}">Siguiente</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="text-center text-muted"><small>Mostrando página {{ clientes_paginados.page }} de {{ clientes_paginados.pages }}. (Total: {{ clientes_paginados.total }} clientes)</small></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editClientModalLabel">Editar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editClientForm" method="POST" action="">
+                <div class="modal-body">
+                    {{ form.hidden_tag() }}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.nombre.label(class="form-label") }}
+                            {{ form.nombre(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.telefono.label(class="form-label") }}
+                            {{ form.telefono(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                             {{ form.email.label(class="form-label") }}
+                             {{ form.email(class="form-control") }}
+                        </div>
+                    </div>
+                     <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.tipo_membresia.label(class="form-label") }}
+                            {{ form.tipo_membresia(class="form-select", id="editTipoMembresia") }}
+                        </div>
+                        <div class="col-md-6 mb-3" id="editVencimientoContainer" style="display: none;">
+                            {{ form.vencimiento_membresia.label(class="form-label") }}
+                            {{ form.vencimiento_membresia(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Script para el formulario de AÑADIR cliente
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoMembresiaSelect = document.getElementById('tipoMembresia');
+        const vencimientoContainer = document.getElementById('vencimientoContainer');
+        const vencimientoInput = document.getElementById('vencimientoInput');
+
+        function toggleVencimientoField() {
+            const selectedValue = tipoMembresiaSelect.value;
+            if (selectedValue === 'Mensual' || selectedValue === 'Anual') {
+                vencimientoContainer.style.display = 'block';
+                vencimientoInput.required = true;
+            } else {
+                vencimientoContainer.style.display = 'none';
+                vencimientoInput.required = false;
+                vencimientoInput.value = '';
+            }
+        }
+        tipoMembresiaSelect.addEventListener('change', toggleVencimientoField);
+        toggleVencimientoField();
+    });
+
+    // Script para el MODAL DE EDICIÓN
+    document.addEventListener('DOMContentLoaded', function() {
+        const editClientModal = document.getElementById('editClientModal');
+        if (editClientModal) {
+            const editForm = document.getElementById('editClientForm');
+            const editTipoMembresiaSelect = document.getElementById('editTipoMembresia');
+            const editVencimientoContainer = document.getElementById('editVencimientoContainer');
+
+            function toggleEditVencimiento() {
+                const selectedValue = editTipoMembresiaSelect.value;
+                if (selectedValue === 'Mensual' || selectedValue === 'Anual') {
+                    editVencimientoContainer.style.display = 'block';
+                } else {
+                    editVencimientoContainer.style.display = 'none';
+                }
+            }
+            editTipoMembresiaSelect.addEventListener('change', toggleEditVencimiento);
+
+            editClientModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const clienteId = button.getAttribute('data-cliente-id');
+                
+                const actionUrl = `/clientes/editar/${clienteId}`;
+                editForm.action = actionUrl;
+
+                editForm.querySelector('#nombre').value = button.getAttribute('data-cliente-nombre');
+                editForm.querySelector('#telefono').value = button.getAttribute('data-cliente-telefono');
+                editForm.querySelector('#email').value = button.getAttribute('data-cliente-email');
+                editTipoMembresiaSelect.value = button.getAttribute('data-cliente-membresia');
+                
+                const vencimiento = button.getAttribute('data-cliente-vencimiento');
+                if (vencimiento) {
+                    editForm.querySelector('#vencimiento_membresia').value = vencimiento.split(' ')[0];
+                } else {
+                    editForm.querySelector('#vencimiento_membresia').value = '';
+                }
+                
+                toggleEditVencimiento();
+            });
+        }
+    });
+</script>
+{% endblock %}

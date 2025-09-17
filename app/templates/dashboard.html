@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Dashboard - Resumen del Día</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Citas Hoy</h5>
+                    <p class="card-text fs-1 fw-bold">{{ total_citas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Citas Pendientes</h5>
+                    <p class="card-text fs-1 fw-bold">{{ citas_pendientes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Citas Finalizadas</h5>
+                    <p class="card-text fs-1 fw-bold">{{ citas_finalizadas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Citas Canceladas</h5>
+                    <p class="card-text fs-1 fw-bold">{{ citas_canceladas }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4>Próxima Cita</h4>
+                </div>
+                <div class="card-body">
+                    {% if proxima_cita %}
+                        <h5 class="card-title">{{ proxima_cita.cliente.nombre }}</h5>
+                        <p class="card-text">
+                            <strong>Hora:</strong> <span class="badge bg-warning text-dark fs-6">{{ proxima_cita.fecha_hora_inicio.strftime('%H:%M') }}</span><br>
+                            <strong>Tratamiento:</strong> {{ proxima_cita.tratamiento.nombre }}<br>
+                            <strong>Terapeuta:</strong> {{ proxima_cita.terapeuta.nombre }}
+                        </p>
+                        <a href="{{ url_for('agenda', fecha=proxima_cita.fecha_hora_inicio.strftime('%Y-%m-%d')) }}" class="btn btn-outline-primary">Ir a la Agenda</a>
+                    {% else %}
+                        <p class="card-text text-muted">No hay más citas pendientes por hoy.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4>Todas las Citas de Hoy</h4>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for cita in citas_hoy %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ cita.cliente.nombre }} - <small>{{ cita.tratamiento.nombre }}</small></h6>
+                                    <span class="badge bg-secondary">{{ cita.estado }}</span>
+                                </div>
+                                <small class="text-muted">{{ cita.fecha_hora_inicio.strftime('%H:%M') }} con {{ cita.terapeuta.nombre }}</small>
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted m-3">No hay citas registradas para el día de hoy.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

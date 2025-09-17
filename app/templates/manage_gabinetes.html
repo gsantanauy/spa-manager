@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Gestionar Gabinetes</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <div class="card mb-4">
+        <div class="card-header"><h3>Añadir Nuevo Gabinete</h3></div>
+        <div class="card-body">
+            <form action="{{ url_for('gestionar_gabinetes') }}" method="POST">
+                <div class="row">
+                    <div class="col-md-5 mb-3"><input type="text" name="nombre" class="form-control" placeholder="Nombre del Gabinete (Ej: Sala Relax)" required></div>
+                    <div class="col-md-5 mb-3"><input type="text" name="descripcion" class="form-control" placeholder="Descripción breve"></div>
+                    <div class="col-md-2 mb-3"><button type="submit" class="btn btn-primary w-100">Agregar</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>Gabinetes Actuales</h3></div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <tbody>
+                    {% for gabinete in gabinetes %}
+                    <tr>
+                        <td>{{ gabinete.nombre }}</td>
+                        <td>{{ gabinete.descripcion }}</td>
+                        <td class="text-end">
+                            <form action="{{ url_for('eliminar_gabinete', id=gabinete.id) }}" method="POST" onsubmit="return confirm('¿Seguro?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td class="text-center">No hay gabinetes registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

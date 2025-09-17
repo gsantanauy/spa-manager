@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">Configurar a {{ terapeuta.nombre }}</h1>
+            <p class="lead text-muted">{{ terapeuta.especialidad }}</p>
+        </div>
+        <a href="{{ url_for('gestionar_terapeutas') }}" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4>Disponibilidad por Fecha</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('detalle_terapeuta_config', terapeuta_id=terapeuta.id) }}" method="POST">
+                        <input type="hidden" name="form_type" value="disponibilidad">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label for="fecha_disp" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" name="fecha" id="fecha_disp" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="hora_inicio_disp" class="form-label">Desde</label>
+                                <input type="time" class="form-control" name="hora_inicio" id="hora_inicio_disp" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="hora_fin_disp" class="form-label">Hasta</label>
+                                <input type="time" class="form-control" name="hora_fin" id="hora_fin_disp" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">+</button>
+                            </div>
+                        </div>
+                    </form>
+                    <hr>
+                    <ul class="list-group">
+                        {% for d in disponibilidades %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>{{ d.fecha.strftime('%d/%m/%Y') }}:</strong> de {{ d.hora_inicio.strftime('%H:%M') }} a {{ d.hora_fin.strftime('%H:%M') }}
+                            <form action="{{ url_for('eliminar_disponibilidad_terapeuta', id=d.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">×</button>
+                            </form>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-center">No hay horarios de disponibilidad definidos.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h4>Bloqueos de Horario (Excepciones)</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('detalle_terapeuta_config', terapeuta_id=terapeuta.id) }}" method="POST">
+                        <input type="hidden" name="form_type" value="bloqueo">
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Motivo (Ej: Almuerzo, Vacaciones)</label>
+                            <input type="text" class="form-control" name="titulo" id="titulo" required>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label for="fecha_bloq" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" name="fecha" id="fecha_bloq" required>
+                            </div>
+                             <div class="col-md-3">
+                                <label for="hora_inicio_bloq" class="form-label">Desde</label>
+                                <input type="time" class="form-control" name="hora_inicio" id="hora_inicio_bloq" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="hora_fin_bloq" class="form-label">Hasta</label>
+                                <input type="time" class="form-control" name="hora_fin" id="hora_fin_bloq" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-warning w-100">+</button>
+                            </div>
+                        </div>
+                    </form>
+                     <hr>
+                    <ul class="list-group">
+                        {% for b in bloqueos %}
+                         <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ b.titulo }}</strong><br>
+                                <small class="text-muted">{{ b.fecha_hora_inicio.strftime('%d/%m/%Y') }} de {{ b.fecha_hora_inicio.strftime('%H:%M') }} a {{ b.fecha_hora_fin.strftime('%H:%M') }}</small>
+                            </div>
+                            <form action="{{ url_for('eliminar_bloqueo_terapeuta', id=b.id) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">×</button>
+                            </form>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-center">No hay bloqueos definidos.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

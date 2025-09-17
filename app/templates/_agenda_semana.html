@@ -1,0 +1,78 @@
+<style>
+    .agenda-semanal th, .agenda-semanal td {
+        vertical-align: top;
+        padding: 4px !important;
+        font-size: 0.8rem;
+        min-width: 120px;
+    }
+    .agenda-semanal .dia-actual {
+        background-color: #e7f1ff !important;
+    }
+    .evento-semana {
+        font-size: 0.75rem;
+        padding: 3px;
+        margin-bottom: 2px;
+        border-radius: 4px;
+        border-left: 3px solid;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .evento-semana strong {
+        font-size: 0.8rem;
+    }
+</style>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered agenda-semanal">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th style="width: 80px;">Hora</th>
+                        {% for dia in dias_de_la_semana %}
+                            <th class="{% if dia.date() == fecha_actual.date() %}dia-actual{% endif %}">
+                                {{ ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][dia.weekday()] }}<br>
+                                <small>{{ dia.strftime('%d/%m') }}</small>
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for franja in franjas_horarias %}
+                    <tr>
+                        <td class="text-center fw-bold align-middle bg-light">{{ franja }}</td>
+                        {% for i in range(7) %}
+                            {% set celda = agenda_semanal[franja][i] %}
+                            {% if celda.render %}
+                                <td rowspan="{{ celda.rowspan }}" class="celda-agenda">
+                                    {% if celda.eventos %}
+                                        {% for evento in celda.eventos %}
+                                            {% if evento.__class__.__name__ == 'Cita' %}
+                                                <div class="evento-semana estado-{{ evento.estado | replace(' ', '-') }}"
+                                                     data-bs-toggle="modal" data-bs-target="#nuevaCitaModal"
+                                                     data-cita-id="{{ evento.id }}" data-cliente-id="{{ evento.cliente_id }}"
+                                                     data-tratamiento-id="{{ evento.tratamiento_id }}" data-terapeuta-id="{{ evento.terapeuta_id }}"
+                                                     data-gabinete-id="{{ evento.gabinete_id }}" data-fecha="{{ evento.fecha_hora_inicio.strftime('%Y-%m-%d') }}"
+                                                     data-hora="{{ evento.fecha_hora_inicio.strftime('%H:%M') }}">
+                                                    <strong>{{ evento.cliente.nombre }}</strong><br>
+                                                    <small>{{ evento.terapeuta.nombre }}</small>
+                                                </div>
+                                            {% else %}
+                                                 <div class="evento-semana evento-bloqueo bg-dark text-white">
+                                                    <strong>{{ evento.titulo }}</strong><br>
+                                                    <small>{{ evento.terapeuta.nombre }}</small>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

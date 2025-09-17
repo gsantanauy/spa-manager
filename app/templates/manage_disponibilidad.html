@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Gestionar Disponibilidad Semanal</h1>
+
+    <div class="card mb-4">
+        <div class="card-header"><h4>Añadir Horario de Trabajo</h4></div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row align-items-end">
+                    <div class="col-md-3"><label>Terapeuta</label><select name="terapeuta_id" class="form-select" required>{% for t in terapeutas %}<option value="{{t.id}}">{{t.nombre}}</option>{% endfor %}</select></div>
+                    <div class="col-md-3"><label>Día de la Semana</label><select name="dia_semana" class="form-select" required><option value="0">Lunes</option><option value="1">Martes</option><option value="2">Miércoles</option><option value="3">Jueves</option><option value="4">Viernes</option><option value="5">Sábado</option><option value="6">Domingo</option></select></div>
+                    <div class="col-md-2"><label>Desde</label><input type="time" name="hora_inicio" class="form-control" required></div>
+                    <div class="col-md-2"><label>Hasta</label><input type="time" name="hora_fin" class="form-control" required></div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Añadir</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h4>Horarios Laborales Definidos</h4></div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for d in disponibilidades %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ d.terapeuta.nombre }}</strong> trabaja los 
+                        <strong>{{ dias_map[d.dia_semana] }}</strong> de 
+                        {{ d.hora_inicio.strftime('%H:%M') }} a {{ d.hora_fin.strftime('%H:%M') }}
+                    </div>
+                    <form action="{{ url_for('eliminar_disponibilidad', id=d.id) }}" method="POST">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </li>
+                {% else %}
+                <li class="list-group-item">No hay horarios de trabajo definidos.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

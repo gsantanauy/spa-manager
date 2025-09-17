@@ -1,0 +1,18 @@
+<!-- === VISTA GENERAL === -->
+<h3 class="mb-3">Agenda General para el {{ fecha_actual.strftime('%A, %d de %B') }}</h3>
+<div class="list-group">
+    {% for cita in citas %}
+    <div class="list-group-item list-group-item-action flex-column align-items-start">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ cita.fecha_hora_inicio.strftime('%H:%M') }} - {{ cita.tratamiento.nombre }}</h5>
+            <small class="text-muted">Terapeuta: {{ cita.terapeuta.nombre }}</small>
+        </div>
+        <p class="mb-1">Cliente: <strong>{{ cita.cliente.nombre }}</strong> | Gabinete: {{ cita.gabinete.nombre }}</p>
+        <small class="text-muted">Agendado por: {{ cita.agendado_por.username if cita.agendado_por else 'Sistema' }} | Estado: {{ cita.estado }}</small>
+    </div>
+    {% else %}
+    <div class="list-group-item">
+        <p class="text-center mb-0">No hay citas agendadas para este día.</p>
+    </div>
+    {% endfor %}
+</div>

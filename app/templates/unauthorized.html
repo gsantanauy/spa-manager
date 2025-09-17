@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="mb-0">Acceso Denegado</h1>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Lo sentimos, no tienes los permisos de administrador necesarios para acceder a esta página.</p>
+                    <p>Si crees que esto es un error, por favor, contacta al administrador del sistema.</p>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-3">Volver al Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

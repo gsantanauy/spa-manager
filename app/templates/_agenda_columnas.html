@@ -1,0 +1,55 @@
+<div class="row">
+    {% for terapeuta in todos_los_terapeutas %}
+    <div class="col-md-4 col-lg-3">
+
+        {% if terapeuta.id not in terapeutas_disponibles_ids %}
+            <div class="card shadow-sm mb-4 bg-light">
+                <div class="card-header text-center text-muted">
+                    <h5 class="mb-0">{{ terapeuta.nombre }}</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted mt-3">No disponible hoy.</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-center">
+                    <h5 class="mb-0">{{ terapeuta.nombre }}</h5>
+                    <small class="text-muted">{{ terapeuta.especialidad }}</small>
+                </div>
+                <div class="card-body">
+                    {% set eventos_del_terapeuta = eventos|selectattr('terapeuta_id', 'equalto', terapeuta.id)|list %}
+                    {% if eventos_del_terapeuta %}
+                        {% for evento in eventos_del_terapeuta %}
+                            {% if evento.__class__.__name__ == 'Cita' %}
+                                {% set colores_estado = {'Agendada': 'primary', 'Confirmada': 'info', 'En curso': 'warning', 'Finalizada': 'success', 'Cancelada': 'secondary'} %}
+                                <div class="card border-left-{{ colores_estado.get(evento.estado, 'light') }} mb-3">
+                                    <div class="card-body py-2 px-3">
+                                        <h6 class="card-title mb-1">{{ evento.cliente.nombre }}</h6>
+                                        <p class="card-text mb-1"><small><strong>Tratamiento:</strong> {{ evento.tratamiento.nombre }}<br><strong>Hora:</strong> {{ evento.fecha_hora_inicio.strftime('%H:%M') }} - {{ evento.fecha_hora_fin.strftime('%H:%M') }}</small></p>
+                                        <div class="d-flex justify-content-end align-items-center mt-2">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#nuevaCitaModal" data-cita-id="{{ evento.id }}" data-cliente-id="{{ evento.cliente_id }}" data-tratamiento-id="{{ evento.tratamiento_id }}" data-terapeuta-id="{{ evento.terapeuta_id }}" data-gabinete-id="{{ evento.gabinete_id }}" data-fecha="{{ evento.fecha_hora_inicio.strftime('%Y-%m-%d') }}" data-hora="{{ evento.fecha_hora_inicio.strftime('%H:%M') }}">Editar</button>
+                                                <form action="{{ url_for('eliminar_cita', id=evento.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro?');"><button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button></form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer text-muted py-1"><small>Estado: <strong>{{ evento.estado }}</strong> | Agendó: <strong>{{ evento.agendado_por.username if evento.agendado_por else 'Sistema' }}</strong></small></div>
+                                </div>
+                            {% elif evento.__class__.__name__ == 'BloqueoHorario' %}
+                                <div class="card bg-dark text-white border-dark mb-3">
+                                    <div class="card-body py-2 px-3 text-center">
+                                        <p class="card-text mb-0"><strong>{{ evento.titulo }}</strong><br><small>{{ evento.fecha_hora_inicio.strftime('%H:%M') }} - {{ evento.fecha_hora_fin.strftime('%H:%M') }}</small></p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted mt-3">Sin eventos para hoy.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>

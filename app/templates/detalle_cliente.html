@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header">
+            <h2>{{ cliente.nombre }}</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Teléfono:</strong> {{ cliente.telefono }}</p>
+            <p><strong>Email:</strong> {{ cliente.email or 'No especificado' }}</p>
+            <a href="{{ url_for('gestionar_clientes') }}" class="btn btn-secondary">← Volver a la lista de clientes</a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Citas Totales</h5>
+                    <p class="card-text fs-2 fw-bold">{{ citas|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Citas Finalizadas</h5>
+                    <p class="card-text fs-2 fw-bold">{{ citas_finalizadas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Gastado</h5>
+                    <p class="card-text fs-2 fw-bold">${{ "%.2f"|format(total_gastado) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4>Historial de Citas</h4>
+        </div>
+        <div class="card-body">
+            {% if citas %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Tratamiento</th>
+                            <th>Terapeuta</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set colores_estado = {
+                            'Agendada': 'primary', 'Confirmada': 'success',
+                            'En curso': 'warning', 'Finalizada': 'secondary',
+                            'Cancelada': 'danger'
+                        } %}
+                        {% for cita in citas %}
+                        <tr>
+                            <td>{{ cita.fecha_hora_inicio.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ cita.fecha_hora_inicio.strftime('%H:%M') }}</td>
+                            <td>{{ cita.tratamiento.nombre }}</td>
+                            <td>{{ cita.terapeuta.nombre }}</td>
+                            <td>
+                                <span class="badge bg-{{ colores_estado.get(cita.estado, 'light') }}">
+                                    {{ cita.estado }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted m-3">Este cliente aún no tiene citas registradas.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

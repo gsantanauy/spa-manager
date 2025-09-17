@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('reportes') }}" class="btn btn-secondary mb-3">&larr; Volver a generar otro reporte</a>
+    <h1>Resultado del Reporte</h1>
+    <div class="table-responsive">
+        {{ tabla_html|safe }}
+    </div>
+</div>
+{% endblock %}

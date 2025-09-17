@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Panel de Configuración</h1>
+    <p class="lead">Desde aquí puedes gestionar los recursos principales del sistema.</p>
+
+    <div class="list-group">
+        <a href="{{ url_for('gestionar_terapeutas') }}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Gestionar Terapeutas</h5>
+            </div>
+            <p class="mb-1">Añadir o eliminar terapeutas y configurar sus horarios de trabajo y bloqueos.</p>
+        </a>
+        <a href="{{ url_for('gestionar_gabinetes') }}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Gestionar Gabinetes</h5>
+            </div>
+            <p class="mb-1">Configurar las salas o gabinetes físicos donde se realizan los tratamientos.</p>
+        </a>
+        <a href="{{ url_for('gestionar_tratamientos') }}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Gestionar Tratamientos</h5>
+            </div>
+            <p class="mb-1">Definir los servicios que ofrece el SPA, su duración y precio.</p>
+        </a>
+        
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('gestionar_usuarios') }}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Gestionar Usuarios</h5>
+            </div>
+            <p class="mb-1">Añadir o eliminar cuentas de recepcionistas del sistema.</p>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

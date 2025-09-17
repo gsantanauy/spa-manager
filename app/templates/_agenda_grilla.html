@@ -1,0 +1,150 @@
+<style>
+    /* Estilos para la tabla compacta */
+    .agenda-grilla-compacta tbody td {
+        padding: 2px 4px !important;
+        font-size: 0.8rem;
+        vertical-align: middle;
+		
+    }
+    .agenda-grilla-compacta .evento-cita {
+        padding: 4px !important;
+        line-height: 1.2;
+        border-radius: 4px;
+        border-left: 5px solid; /* Borde de color para el estado */
+        transition: background-color 0.3s;
+    }
+    .agenda-grilla-compacta .acciones-evento {
+        margin-top: 3px;
+        display: flex; /* Alinea los botones en una fila */
+        gap: 4px;      /* Espacio entre botones */
+    }
+    .agenda-grilla-compacta .acciones-evento .btn {
+        padding: 1px 4px;
+        font-size: 0.7rem;
+    }
+    .dropdown-menu { /* Ajustes para el nuevo menú de estados */
+        font-size: 0.8rem;
+    }
+    .dropdown-item {
+        cursor: pointer;
+    }
+
+    /* === Colores por estado de la cita === */
+    .evento-cita.estado-Agendada {
+        background-color: #e7f1ff;
+        border-left-color: #0d6efd;
+		color: #000; 
+    }
+    .evento-cita.estado-Confirmada {
+        background-color: #e0f8f7;
+        border-left-color: #17a2b8;
+		color: #000; 
+    }
+    /* NUEVO ESTADO Y COLOR */
+    .evento-cita.estado-En-curso {
+        background-color: #fff8e1;
+        border-left-color: #ffc107;
+		color: #000;
+    }
+    .evento-cita.estado-Finalizada {
+        background-color: #dff0d8;
+        border-left-color: #198754;
+		color: #000;
+    }
+    .evento-cita.estado-Cancelada {
+        background-color: #f2f2f2;
+        border-left-color: #6c757d;
+        text-decoration: line-through; /* Tachar texto para citas canceladas */
+		color: #000;
+    }
+</style>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered agenda-grilla agenda-grilla-compacta">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th style="width: 80px;">Hora</th>
+                        {% for terapeuta in terapeutas %}
+                        <th>{{ terapeuta.nombre }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for franja in franjas_horarias %}
+                    <tr>
+                        <td class="text-center fw-bold align-middle bg-light">{{ franja }}</td>
+                        {% for terapeuta in terapeutas %}
+                            {% set celda = agenda_diaria[franja][terapeuta.id] %}
+                            {% if celda.render %}
+                            <td class="align-top p-1 celda-agenda status-{{ celda.status }}"
+                                rowspan="{{ celda.rowspan }}"
+                                {% if celda.status == 'disponible' %}
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#nuevaCitaModal"
+                                    data-terapeuta-id="{{ terapeuta.id }}"
+                                    data-fecha="{{ fecha_actual.strftime('%Y-%m-%d') }}"
+                                    data-hora="{{ franja }}"
+                                {% endif %}>
+
+                                {% if celda.status == 'cita' %}
+                                <div class="evento-cita p-2 estado-{{ celda.evento.estado | replace(' ', '-') }}">
+                                    <strong>{{ celda.evento.cliente.nombre }}</strong><br>
+                                    <small>{{ celda.evento.tratamiento.nombre }}</small>
+
+                                    <hr class="my-1">
+                                    <small class="text-muted d-block">
+                                        G: {{ celda.evento.gabinete.nombre }}<br>
+                                        {% if celda.evento.agendado_por %}
+                                        U: {{ celda.evento.agendado_por.username }}
+                                        {% endif %}
+                                    </small>
+
+                                    <div class="acciones-evento">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#nuevaCitaModal"
+                                            data-cita-id="{{ celda.evento.id }}" data-cliente-id="{{ celda.evento.cliente_id }}"
+                                            data-tratamiento-id="{{ celda.evento.tratamiento_id }}" data-terapeuta-id="{{ celda.evento.terapeuta_id }}"
+                                            data-gabinete-id="{{ celda.evento.gabinete_id }}" data-fecha="{{ celda.evento.fecha_hora_inicio.strftime('%Y-%m-%d') }}"
+                                            data-hora="{{ celda.evento.fecha_hora_inicio.strftime('%H:%M') }}">
+                                            <i class="bi bi-pencil-fill"></i> Editar
+                                        </button>
+
+                                        <form method="POST" action="{{ url_for('eliminar_cita', id=celda.evento.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-light text-danger"
+                                                    onclick="return confirm('¿Estás seguro de que deseas eliminar esta cita?');">
+                                                <i class="bi bi-trash-fill"></i> Eliminar
+                                            </button>
+                                        </form>
+
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="dropdownMenuButton-{{ celda.evento.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-check2-circle"></i> Estado
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{ celda.evento.id }}">
+                                                {% for estado in ['Agendada', 'Confirmada', 'En curso', 'Finalizada', 'Cancelada'] %}
+                                                <li>
+                                                    <form method="POST" action="{{ url_for('cambiar_estado_cita', id=celda.evento.id) }}" class="d-inline">
+                                                        <input type="hidden" name="estado" value="{{ estado }}">
+                                                        <button type="submit" class="dropdown-item {% if celda.evento.estado == estado %}active{% endif %}">{{ estado }}</button>
+                                                    </form>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        </div>
+                                </div>
+                                {% elif celda.status == 'bloqueo' %}
+                                <div class="evento-bloqueo p-2">
+                                    <strong>{{ celda.evento.titulo }}</strong>
+                                </div>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

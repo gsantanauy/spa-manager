@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Gestionar Terapeutas</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Añadir Nuevo Terapeuta</h3>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('gestionar_terapeutas') }}" method="POST">
+                <div class="row">
+                    <div class="col-md-5 mb-3">
+                        <label for="nombre" class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="col-md-5 mb-3">
+                        <label for="especialidad" class="form-label">Especialidad (Ej: Masajista, Cosmetóloga)</label>
+                        <input type="text" class="form-control" id="especialidad" name="especialidad">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end mb-3">
+                        <button type="submit" class="btn btn-primary w-100">Agregar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Terapeutas Actuales</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Especialidad</th>
+                        <th scope="col" class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for terapeuta in terapeutas %}
+                    <tr>
+                        <td><a href="{{ url_for('detalle_terapeuta_config', terapeuta_id=terapeuta.id) }}"><strong>{{ terapeuta.nombre }}</strong></a></td>
+                        <td>{{ terapeuta.especialidad }}</td>
+                        <td class="text-end">
+                            <form action="{{ url_for('eliminar_terapeuta', id=terapeuta.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este terapeuta?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">No hay terapeutas registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

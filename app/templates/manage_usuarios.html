@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Gestionar Usuarios</h1>
+        <a href="{{ url_for('crear_usuario') }}" class="btn btn-primary">Añadir Nuevo Usuario</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre de Usuario</th>
+                        <th>Email</th>
+                        <th>Administrador</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.id }}</td>
+                        <td>{{ usuario.username }}</td>
+                        <td>{{ usuario.email or 'No especificado' }}</td>
+                        <td>
+                            {% if usuario.is_admin %}
+                                <span class="badge bg-success">Sí</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if usuario.id != current_user.id %}
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-secondary btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#changePasswordModal"
+                                            data-user-id="{{ usuario.id }}" 
+                                            data-user-name="{{ usuario.username }}">
+                                        Cambiar Contraseña
+                                    </button>
+                                    <form action="{{ url_for('eliminar_usuario', id=usuario.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro? Esta acción no se puede deshacer.');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <span class="badge bg-info text-dark">Tu Usuario</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Cambiar Contraseña para <strong id="modalUserName"></strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="changePasswordForm" method="POST" action="">
+                <div class="modal-body">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control", size=32, required=True) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.password2.label(class="form-label") }}
+                        {{ form.password2(class="form-control", size=32, required=True) }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var changePasswordModal = document.getElementById('changePasswordModal');
+    if (changePasswordModal) {
+        changePasswordModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            
+            var userId = button.getAttribute('data-user-id');
+            var userName = button.getAttribute('data-user-name');
+            
+            // --- INICIO DE LA CORRECCIÓN ---
+            // En lugar de usar url_for aquí, construimos la URL manualmente.
+            // Esto evita el error de conversión de tipo al cargar la página.
+            var finalActionUrl = "/configuracion/usuarios/cambiar_password/" + userId;
+            // --- FIN DE LA CORRECCIÓN ---
+            
+            var modalTitle = changePasswordModal.querySelector('#modalUserName');
+            var modalForm = changePasswordModal.querySelector('#changePasswordForm');
+            
+            modalTitle.textContent = userName;
+            modalForm.action = finalActionUrl;
+        });
+    }
+});
+</script>
+{% endblock %}

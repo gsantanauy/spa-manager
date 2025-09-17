@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Gestionar Bloqueos de Horario (Excepciones)</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulario para crear un nuevo bloqueo -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header"><h4>Crear Nuevo Bloqueo</h4></div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('gestionar_bloqueos') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-3">
+                        <label for="terapeuta_id" class="form-label">Terapeuta</label>
+                        <select id="terapeuta_id" name="terapeuta_id" class="form-select" required>
+                            <option value="" disabled selected>Seleccionar...</option>
+                            {% for terapeuta in terapeutas %}
+                            <option value="{{ terapeuta.id }}">{{ terapeuta.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="titulo" class="form-label">Motivo (Título)</label>
+                        <input type="text" id="titulo" name="titulo" class="form-control" placeholder="Ej: Almuerzo, Reunión" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="fecha" class="form-label">Fecha</label>
+                        <input type="date" id="fecha" name="fecha" class="form-control" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="hora_inicio" class="form-label">Desde</label>
+                        <input type="time" id="hora_inicio" name="hora_inicio" class="form-control" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="hora_fin" class="form-label">Hasta</label>
+                        <input type="time" id="hora_fin" name="hora_fin" class="form-control" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Crear Bloqueo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de bloqueos existentes -->
+    <div class="card shadow-sm">
+        <div class="card-header"><h4>Bloqueos Programados</h4></div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for bloqueo in bloqueos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ bloqueo.titulo }}</strong> para <strong>{{ bloqueo.terapeuta.nombre }}</strong><br>
+                        <small class="text-muted">{{ bloqueo.fecha_hora_inicio.strftime('%d/%m/%Y de %H:%M') }} a {{ bloqueo.fecha_hora_fin.strftime('%H:%M') }}</small>
+                    </div>
+                    <form action="{{ url_for('eliminar_bloqueo', id=bloqueo.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este bloqueo?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">No hay bloqueos programados.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

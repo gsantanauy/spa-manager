@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Gestionar Tratamientos</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <div class="card mb-4">
+        <div class="card-header"><h3>Añadir Nuevo Tratamiento</h3></div>
+        <div class="card-body">
+            <form action="{{ url_for('gestionar_tratamientos') }}" method="POST">
+                <div class="row">
+                    <div class="col-md-4 mb-3"><input type="text" name="nombre" class="form-control" placeholder="Nombre del Tratamiento" required></div>
+                    <div class="col-md-3 mb-3"><input type="number" name="duracion" class="form-control" placeholder="Duración (minutos)" required></div>
+                    <div class="col-md-3 mb-3"><input type="number" step="0.01" name="precio" class="form-control" placeholder="Precio ($)"></div>
+                    <div class="col-md-2 mb-3"><button type="submit" class="btn btn-primary w-100">Agregar</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>Tratamientos Actuales</h3></div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead><tr><th>Nombre</th><th>Duración</th><th>Precio</th><th></th></tr></thead>
+                <tbody>
+                {% for tratamiento in tratamientos %}
+                <tr>
+                    <td>{{ tratamiento.nombre }}</td>
+                    <td>{{ tratamiento.duracion }} min</td>
+                    <td>${{ "%.2f"|format(tratamiento.precio) if tratamiento.precio else 'N/A' }}</td>
+                    <td class="text-end">
+                        <form action="{{ url_for('eliminar_tratamiento', id=tratamiento.id) }}" method="POST" onsubmit="return confirm('¿Seguro?');">
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center">No hay tratamientos registrados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

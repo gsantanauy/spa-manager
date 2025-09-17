@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+    <h1>Generar Reportes de Citas</h1>
+    <p>Selecciona un rango de fechas para generar tu reporte.</p>
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('reportes') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+                        <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+                        <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" name="formato" value="ver" class="btn btn-primary">Ver en Pantalla</button>
+                        <button type="submit" name="formato" value="excel" class="btn btn-success">Exportar a Excel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
