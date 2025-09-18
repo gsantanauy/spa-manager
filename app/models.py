@@ -9,7 +9,7 @@ class Recepcionista(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True, nullable=False)
     email = db.Column(db.String(120), index=True, unique=True, nullable=True)
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(256))
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     citas_agendadas = db.relationship('Cita', backref='agendado_por', lazy='dynamic')
 
