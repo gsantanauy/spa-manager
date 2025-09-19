@@ -639,8 +639,8 @@ def eliminar_usuario(id):
     return redirect(url_for('gestionar_usuarios'))
 
 @app.route('/admin/crear_usuario', methods=['GET', 'POST'])
-#@login_required
-#@admin_required
+@login_required
+@admin_required
 def crear_usuario():
     form = RegistrationForm()
     if form.validate_on_submit():
